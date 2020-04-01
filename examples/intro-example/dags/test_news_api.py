@@ -6,37 +6,12 @@ Documentation that goes along with the Airflow tutorial located
 [here](https://airflow.incubator.apache.org/tutorial.html)
 """
 from datetime import timedelta, datetime
+import requests
 
 import airflow
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
-
-# These args will get passed on to each operator
-# You can override them on a per-task basis during operator initialization
-# default_args = {
-#     'owner': 'airflow',
-#     'depends_on_past': False,
-#     'start_date': airflow.utils.dates.days_ago(2),
-#     'email': ['airflow@example.com'],
-#     'email_on_failure': False,
-#     'email_on_retry': False,
-#     'retries': 1,
-#     'retry_delay': timedelta(minutes=5),
-#     # 'queue': 'bash_queue',
-#     # 'pool': 'backfill',
-#     # 'priority_weight': 10,
-#     # 'end_date': datetime(2016, 1, 1),
-#     # 'wait_for_downstream': False,
-#     # 'dag': dag,
-#     # 'adhoc':False,
-#     # 'sla': timedelta(hours=2),
-#     # 'execution_timeout': timedelta(seconds=300),
-#     # 'on_failure_callback': some_function,
-#     # 'on_success_callback': some_other_function,
-#     # 'on_retry_callback': another_function,
-#     # 'trigger_rule': u'all_success'
-# }
 
 default_args = {
     'owner': 'airflow',
@@ -51,12 +26,17 @@ dag = DAG(
     'print_dag',
     default_args=default_args,
     description='Test Print',
-    schedule_interval='*/5 * * * *',
+    schedule_interval='0 * * * *',
     # schedule_interval=timedelta(days=1),
 )
 
 def test_print(test_print="TESTTTTTTTTT"):
     return print(test_print)
+
+def post_news():
+    url = "http://newsapi.org/v2/everything?q=bitcoin&from=2020-03-01&sortBy=publishedAt&apiKey=9bb05ce2fe96482ba995c6709bb8648a"
+    response = requests.request("GET", url)
+    return print(response.text)
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = BashOperator(
@@ -72,4 +52,12 @@ t2 = PythonOperator(
     dag=dag,
 )
 
+t3 = PythonOperator(
+    task_id="post_news", 
+    python_callable=post_news,
+    # provide_context=True,
+    dag=dag,
+)
+
 t1 >> t2
+t2 >> t3
