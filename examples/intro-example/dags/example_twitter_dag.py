@@ -76,8 +76,7 @@ default_args = {
 }
 
 dag = DAG(
-    'example_twitter_dag', default_args=default_args,
-    schedule_interval="@daily")
+    'example_twitter_dag', default_args=default_args, schedule_interval="@daily")
 
 # --------------------------------------------------------------------------------
 # This task should call Twitter API and retrieve tweets from yesterday from and to
